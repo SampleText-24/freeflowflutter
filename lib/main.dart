@@ -27,29 +27,74 @@ class MyApp extends StatelessWidget {
 
 class MyAppState extends ChangeNotifier {
 
-  List<Map<String, dynamic>> emojiList = [
+  List emojiList = [
     {
       'title': '95_CryThumbsUp',
       'imageUrl': 'https://cdn3.emoji.gg/emojis/5163-95-crythumbsup.png',
-      'color': Colors.red,
+      'color': Colors.cyan.shade200,
+    },
+    {
+      'title': 'DdogHwat',
+      'imageUrl': 'https://cdn.discordapp.com/emojis/1056608003761115186.webp',
+      'color': Colors.amberAccent.shade200,
     },
     {
       'title': 'Shy_blushy_cursed',
       'imageUrl': 'https://cdn3.emoji.gg/emojis/9540-shy-blushy-cursed.png',
-      'color': Colors.blue,
+      'color': Colors.blue.shade200,
     },
     {
       'title': 'EzPepe',
       'imageUrl': 'https://cdn3.emoji.gg/emojis/5492_EzPepe.png',
-      'color': Colors.green,
+      'color': Colors.green.shade200,
     },
     {
       'title': 'RickRoll',
       'imageUrl': 'https://cdn3.emoji.gg/emojis/3416-rickroll.gif',
-      'color': Colors.orange,
+      'color': Colors.orange.shade200,
+    },
+    {
+      'title': 'CatJAM',
+      'imageUrl': 'https://cdn3.emoji.gg/emojis/5498_catJAM.gif',
+      'color': Colors.lime.shade200,
+    },
+    {
+      'title': 'PeepoWait',
+      'imageUrl': 'https://cdn3.emoji.gg/emojis/5911-peepowait.png',
+      'color': Colors.yellow.shade200,
+    },
+    {
+      'title': 'Gigachad',
+      'imageUrl': 'https://cdn3.emoji.gg/emojis/9588-gigachad.png',
+      'color': Colors.lightBlueAccent.shade200,
+    },
+    {
+      'title': 'pain',
+      'imageUrl': 'https://cdn3.emoji.gg/emojis/9889-pain.gif',
+      'color': Colors.orange.shade200,
+    },
+    {
+      'title': 'trollege',
+      'imageUrl': 'https://cdn3.emoji.gg/emojis/5680-trollege.gif',
+      'color': Colors.orange.shade200,
     },
   ];
 
+  var favorites = [];
+
+  void toggleFavorite(item) {
+    favorites.contains(item)
+      ? favorites.remove(item)
+      : favorites.add(item);
+
+    notifyListeners();
+  }
+
+  void removeFavorite(item) {
+    favorites.remove(item);
+
+    notifyListeners();
+  }
 
 }
 
@@ -71,7 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
         page = MainList();
         break;
       case 1:
-        page = Placeholder();
+        page = FavoritesPage();
         break;
       default:
         throw UnimplementedError('no widget for $selectedIndex');
@@ -80,7 +125,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
           leading: Icon(Icons.arrow_back_ios_new),
-          title: Text('Смайлики',
+          title: Text('Select favorite',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24)),
           backgroundColor: Colors.teal.shade100),
       body: page,
@@ -112,9 +157,9 @@ class MainList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-    print(appState.emojiList);
     return GridView.count(
       crossAxisCount: 2,
+      padding: EdgeInsets.all(5),
       children: [
         for (var el in appState.emojiList)
           MyCard(title: el['title'], imageUrl: el['imageUrl'], color: el['color'])
@@ -138,10 +183,19 @@ class MyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+
+    IconData icon;
+    if (appState.favorites.contains(imageUrl)) {
+      icon = Icons.favorite;
+    } else {
+      icon = Icons.favorite_border;
+    }
+
     return Card(
       color: color,
       shape:
-      RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       child: Column(
         children: [
           Stack(
@@ -150,10 +204,16 @@ class MyCard extends StatelessWidget {
                   imageUrl,
                   height: 150),
               Positioned(
-                top: 10,
+                top: 5,
                 right: 0,
                 child:
-                Icon(Icons.favorite_border, color: Colors.red.shade100),
+                IconButton(
+                  onPressed: () {
+                    appState.toggleFavorite(imageUrl);
+                  },
+                  icon: Icon(icon),
+                  color: Colors.red.shade300
+                ),
               ),
             ],
           ),
@@ -163,6 +223,49 @@ class MyCard extends StatelessWidget {
           )
         ],
       ),
+    );
+  }
+}
+
+class FavoritesPage extends StatelessWidget {
+  const FavoritesPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+
+    if (appState.favorites.isEmpty) {
+      return Center(
+        child: Text('You can add favorite emoji', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Text('You have ${appState.favorites.length} favorites:'),
+        ),
+        Expanded(child: GridView(
+          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 400,
+            childAspectRatio: 400 / 100,
+            mainAxisSpacing: 20
+          ),
+          children: [
+            for (var fav in appState.favorites)
+              ListTile(
+                leading: IconButton(
+                  icon: Icon(Icons.delete, semanticLabel: 'Delete',),
+                  onPressed: () {
+                    appState.removeFavorite(fav);
+                  },
+                ),
+                title: Image.network('$fav'),
+              ),
+          ],
+        ))
+      ],
     );
   }
 }
