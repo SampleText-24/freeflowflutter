@@ -1,4 +1,3 @@
-import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,7 +16,8 @@ class MyApp extends StatelessWidget {
         title: 'Sample App',
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlueAccent),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
+          fontFamily: 'Roboto',
         ),
         home: MyHomePage(),
       ),
@@ -26,38 +26,81 @@ class MyApp extends StatelessWidget {
 }
 
 class MyAppState extends ChangeNotifier {
-  var current = WordPair.random();
-  var history = <WordPair>[];
 
-  GlobalKey? historyListKey;
+  List emojiList = [
+    {
+      'title': '95_CryThumbsUp',
+      'imageUrl': 'https://cdn3.emoji.gg/emojis/5163-95-crythumbsup.png',
+      'color': Colors.cyan.shade200,
+    },
+    {
+      'title': 'DdogHwat',
+      'imageUrl': 'https://cdn.discordapp.com/emojis/1056608003761115186.webp',
+      'color': Colors.amberAccent.shade200,
+    },
+    {
+      'title': 'Shy_blushy_cursed',
+      'imageUrl': 'https://cdn3.emoji.gg/emojis/9540-shy-blushy-cursed.png',
+      'color': Colors.blue.shade200,
+    },
+    {
+      'title': 'EzPepe',
+      'imageUrl': 'https://cdn3.emoji.gg/emojis/5492_EzPepe.png',
+      'color': Colors.green.shade200,
+    },
+    {
+      'title': 'RickRoll',
+      'imageUrl': 'https://cdn3.emoji.gg/emojis/3416-rickroll.gif',
+      'color': Colors.orange.shade200,
+    },
+    {
+      'title': 'CatJAM',
+      'imageUrl': 'https://cdn3.emoji.gg/emojis/5498_catJAM.gif',
+      'color': Colors.lime.shade200,
+    },
+    {
+      'title': 'PeepoWait',
+      'imageUrl': 'https://cdn3.emoji.gg/emojis/5911-peepowait.png',
+      'color': Colors.yellow.shade200,
+    },
+    {
+      'title': 'Gigachad',
+      'imageUrl': 'https://cdn3.emoji.gg/emojis/9588-gigachad.png',
+      'color': Colors.lightBlueAccent.shade200,
+    },
+    {
+      'title': 'pain',
+      'imageUrl': 'https://cdn3.emoji.gg/emojis/9889-pain.gif',
+      'color': Colors.orange.shade200,
+    },
+    {
+      'title': 'trollege',
+      'imageUrl': 'https://cdn3.emoji.gg/emojis/5680-trollege.gif',
+      'color': Colors.orange.shade200,
+    },
+  ];
 
-  void getNext() {
-    history.insert(0, current);
-    var animatedList = historyListKey?.currentState as AnimatedListState?;
-    animatedList?.insertItem(0);
-    current = WordPair.random();
+  var favorites = [];
+
+  void toggleFavorite(item) {
+    favorites.contains(item)
+      ? favorites.remove(item)
+      : favorites.add(item);
+
     notifyListeners();
   }
 
-  var favorites = <WordPair>[];
-
-  void toggleFavorite([WordPair? pair]) {
-    pair = pair ?? current;
-    favorites.contains(pair)
-        ? favorites.remove(pair)
-        : favorites.add(pair);
+  void removeFavorite(item) {
+    favorites.remove(item);
 
     notifyListeners();
   }
 
-  void removeFavorite(WordPair pair) {
-    favorites.remove(pair);
-
-    notifyListeners();
-  }
 }
 
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key}) : super(key: key);
+
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
@@ -67,122 +110,133 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    var colorScheme = Theme.of(context).colorScheme;
-
     Widget page;
     switch (selectedIndex) {
       case 0:
-        page = GeneratorPage();
+        page = MainList();
         break;
       case 1:
-        page = FavoritePage();
+        page = FavoritesPage();
         break;
       default:
         throw UnimplementedError('no widget for $selectedIndex');
     }
 
-    var mainArea = ColoredBox(
-      color: colorScheme.surfaceVariant,
-      child: AnimatedSwitcher(
-        duration: Duration(milliseconds: 200),
-        child: page,
+    return Scaffold(
+      appBar: AppBar(
+          leading: Icon(Icons.arrow_back_ios_new),
+          title: Text('Select favorite',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24)),
+          backgroundColor: Colors.teal.shade100),
+      body: page,
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'favorite',
+          ),
+        ],
+        currentIndex: selectedIndex,
+        onTap: (value) {
+          setState(() {
+            selectedIndex = value;
+          });
+        },
       ),
     );
-
-    return LayoutBuilder(builder: (context, constraints) {
-      return Scaffold(
-        body: Row(
-          children: [
-            SafeArea(
-              child: NavigationRail(
-                extended: constraints.maxWidth >= 600,
-                destinations: [
-                  NavigationRailDestination(
-                    icon: Icon(Icons.home),
-                    label: Text('Home'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.favorite),
-                    label: Text('Favorites'),
-                  ),
-                ],
-                selectedIndex: selectedIndex,
-                onDestinationSelected: (value) {
-                  setState(() {
-                    selectedIndex = value;
-                  });
-                },
-              ),
-            ),
-            Expanded(
-              child: mainArea
-              ),
-          ],
-        ),
-      );
-    });
   }
 }
 
-class GeneratorPage extends StatelessWidget {
+class MainList extends StatelessWidget {
+  const MainList({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-    var pair = appState.current;
+    return GridView.count(
+      crossAxisCount: 2,
+      padding: EdgeInsets.all(5),
+      children: [
+        for (var el in appState.emojiList)
+          MyCard(title: el['title'], imageUrl: el['imageUrl'], color: el['color'])
+      ],
+    );
+  }
+}
+
+class MyCard extends StatelessWidget {
+  final String title;
+  final String imageUrl;
+  final Color color;
+
+  const MyCard({
+    Key? key,
+    required this.title,
+    required this.imageUrl,
+    required this.color,
+  }) : super(key: key);
+
+
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
 
     IconData icon;
-    if (appState.favorites.contains(pair)) {
+    if (appState.favorites.contains(imageUrl)) {
       icon = Icons.favorite;
     } else {
       icon = Icons.favorite_border;
     }
 
-    return Center(
+    return Card(
+      color: color,
+      shape:
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(
-            flex: 3,
-            child: HistoryListView(),
-          ),
-          SizedBox(height: 10),
-          BigCard(pair: pair),
-          SizedBox(height: 10),
-          Row(
-            mainAxisSize: MainAxisSize.min,
+          Stack(
             children: [
-              ElevatedButton.icon(
-                onPressed: () {
-                  appState.toggleFavorite();
-                },
-                icon: Icon(icon),
-                label: Text('Like'),
-              ),
-              SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () {
-                  appState.getNext();
-                },
-                child: Text('Next'),
+              Image.network(
+                  imageUrl,
+                  height: 150),
+              Positioned(
+                top: 5,
+                right: 0,
+                child:
+                IconButton(
+                  onPressed: () {
+                    appState.toggleFavorite(imageUrl);
+                  },
+                  icon: Icon(icon),
+                  color: Colors.red.shade300
+                ),
               ),
             ],
           ),
-          Spacer(flex: 2)
+          Center(
+            heightFactor: 2,
+            child: Text(title),
+          )
         ],
       ),
     );
   }
 }
 
-class FavoritePage extends StatelessWidget {
+class FavoritesPage extends StatelessWidget {
+  const FavoritesPage({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-    var theme = Theme.of(context);
 
     if (appState.favorites.isEmpty) {
       return Center(
-        child: Text('You can add favorite pair'),
+        child: Text('You can add favorite emoji', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
       );
     }
     return Column(
@@ -194,20 +248,20 @@ class FavoritePage extends StatelessWidget {
         ),
         Expanded(child: GridView(
           gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 400,
-              childAspectRatio: 400 / 80
+            maxCrossAxisExtent: 400,
+            childAspectRatio: 400 / 100,
+            mainAxisSpacing: 20
           ),
           children: [
             for (var fav in appState.favorites)
               ListTile(
                 leading: IconButton(
                   icon: Icon(Icons.delete, semanticLabel: 'Delete',),
-                  color: theme.primaryColorDark,
                   onPressed: () {
                     appState.removeFavorite(fav);
                   },
                 ),
-                title: Text('${fav.first} ${fav.second}'),
+                title: Image.network('$fav'),
               ),
           ],
         ))
@@ -216,95 +270,3 @@ class FavoritePage extends StatelessWidget {
   }
 }
 
-class BigCard extends StatelessWidget {
-  const BigCard({
-    super.key,
-    required this.pair,
-  });
-
-  final WordPair pair;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final style = theme.textTheme.displayMedium!.copyWith(
-      color: theme.colorScheme.onPrimary,
-    );
-
-    return Card(
-      color: theme.colorScheme.primary,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: AnimatedSize(
-          duration: Duration(milliseconds: 200),
-          child: MergeSemantics(
-            child: Wrap(
-              children: [
-                Text(
-                  '${pair.first} ${pair.second}',
-                  style: style.copyWith(fontWeight: FontWeight.bold),
-                )
-              ],
-            ),
-          ),
-        )
-      ),
-    );
-  }
-}
-
-class HistoryListView extends StatefulWidget {
-  const HistoryListView({Key? key}) : super(key: key);
-
-  @override
-  State<HistoryListView> createState() => _HistoryListViewState();
-}
-
-class _HistoryListViewState extends State<HistoryListView> {
-
-  final _key = GlobalKey();
-
-  static const Gradient _maskingGradient = LinearGradient(
-    colors: [Colors.transparent, Colors.black],
-    stops: [0.0, 0.5],
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    final appState = context.watch<MyAppState>();
-    appState.historyListKey = _key;
-
-    return ShaderMask(
-      shaderCallback: (bounds) => _maskingGradient.createShader(bounds),
-      blendMode: BlendMode.dstIn,
-      child: AnimatedList(
-        key: _key,
-        reverse: true,
-        padding: EdgeInsets.only(top: 100),
-        initialItemCount: appState.history.length,
-        itemBuilder: (context, index, animation) {
-          final pair = appState.history[index];
-          return SizeTransition(
-            sizeFactor: animation,
-            child: Center(
-              child: TextButton.icon(
-                onPressed: () {
-                  appState.toggleFavorite(pair);
-                },
-                icon: appState.favorites.contains(pair)
-                  ? Icon(Icons.favorite, size: 12,)
-                  : SizedBox(),
-                label: Text(
-                  '${pair.first} ${pair.second}',
-                  semanticsLabel: pair.asPascalCase,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
