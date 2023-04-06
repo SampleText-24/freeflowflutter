@@ -1,5 +1,5 @@
-name: variablyas
-description: A new Flutter project.
+name: animated_responsive_layout
+description: Therapistdog
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
@@ -12,20 +12,20 @@ dependencies:
   flutter:
     sdk: flutter
 
-  english_words: ^4.0.0
-  provider: ^6.0.0
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
   flutter_lints: ^2.0.0
 
 flutter:
   uses-material-design: true
-  fonts:
-    - family: Roboto
-      fonts:
-        - asset: fonts/Roboto-Regular.ttf
-        - asset: fonts/Roboto-Bold.ttf
-          weight: 700
+
+  assets:
+    - assets/avatar_1.png
+    - assets/avatar_2.png
+    - assets/avatar_3.png
+    - assets/avatar_4.png
+    - assets/avatar_5.png
+    - assets/avatar_6.png
+    - assets/avatar_7.png
+    - assets/thumbnail_1.png
