@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../models/data.dart' as data;
 import '../models/models.dart';
+import 'search_bar.dart';
 
 class EmailListView extends StatelessWidget {
   const EmailListView({
@@ -23,7 +24,7 @@ class EmailListView extends StatelessWidget {
       child: ListView(
         children: [
           const SizedBox(height: 8),
-          // SearchBar()
+          SearchBar(currentUser: currentUser),
           const SizedBox(height: 8),
           ...List.generate(
             data.emails.length,
