@@ -1,149 +1,91 @@
-import 'package:flutter/material.dart';
+// import 'dart:io';
 
-import 'animations.dart';
-import 'models/data.dart' as data;
-import 'models/models.dart';
-import 'transitions/list_detail_transition.dart';
-import 'widgets/animated_floating_action_button.dart';
-import 'widgets/disappearing_bottom_navigation_bar.dart';
-import 'widgets/disappearing_navigation_rail.dart';
-import 'widgets/email_list_view.dart';
-import 'widgets/reply_list_view.dart';
+import 'package:flex_color_scheme/flex_color_scheme.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:googleapis_auth/googleapis_auth.dart';
+
+import 'src/adaptive_login.dart';
+import 'src/adaptive_playlists.dart';
+import 'src/app_state.dart';
+import 'src/playlist_details.dart';
+
+final scopes = [
+  'https://www.googleapis.com/auth/youtube.readonly',
+];
+
+final clientId = ClientId(
+  'TODO-Client-ID.apps.googleusercontent.com',
+  'TODO-Client-secret',
+);
+
+final _router = GoRouter(
+  routes: <RouteBase>[
+    GoRoute(
+      path: '/',
+      builder: (context, state) {
+        return AdaptivePlaylists();
+      },
+      redirect: (context, state) {
+        if (!context.read<AuthedUserPlaylists>().isLoggedIn) {
+          return '/login';
+        } else {
+          return null;
+        }
+      },
+      routes: <RouteBase>[
+        GoRoute(
+          path: 'login',
+          builder: (context, state) {
+            return AdaptiveLogin(
+              clientId: clientId,
+              scopes: scopes,
+              loginButtonChild: const Text('Login to YouTube'),
+            );
+          },
+        ),
+        GoRoute(
+          path: 'playlist/:id',
+          builder: (context, state) {
+            final title = state.queryParams['title']!;
+            final id = state.params['id']!;
+            return PlaylistDetails(
+              playlistId: id,
+              playlistName: title,
+            );
+          },
+        ),
+      ],
+    ),
+  ],
+);
 
 void main() {
-  runApp(const MainApp());
+  runApp(ChangeNotifierProvider<AuthedUserPlaylists>(
+    create: (context) => AuthedUserPlaylists(),
+    child: const PlaylistsApp(),
+  ));
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class PlaylistsApp extends StatelessWidget {
+  const PlaylistsApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData.dark(useMaterial3: true),
-      home: Feed(currentUser: data.user_0),
+    return MaterialApp.router(
+      title: 'Your Playlists',
+      theme: FlexColorScheme.light(
+        scheme: FlexScheme.red,
+        useMaterial3: true,
+      ).toTheme,
+      darkTheme: FlexColorScheme.dark(
+        scheme: FlexScheme.red,
+        useMaterial3: true,
+      ).toTheme,
+      themeMode: ThemeMode.dark,
+      debugShowCheckedModeBanner: false,
+      routerConfig: _router,
     );
   }
 }
-
-class Feed extends StatefulWidget {
-  const Feed({
-    super.key,
-    required this.currentUser,
-  });
-
-  final User currentUser;
-
-  @override
-  State<Feed> createState() => _FeedState();
-}
-
-class _FeedState extends State<Feed> with SingleTickerProviderStateMixin {
-  late final _colorSchema = Theme.of(context).colorScheme;
-  late final _backgroundColor = Color.alphaBlend(
-    _colorSchema.primary.withOpacity(0.14), _colorSchema.surface
-  );
-
-  late final _controller = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      reverseDuration: const Duration(milliseconds: 1250),
-      value: 0,
-      vsync: this);
-  late final _railAnimation = RailAnimation(parent: _controller);
-  late final _railFabAnimation = RailFabAnimation(parent: _controller);
-  late final _barAnimation = BarAnimation(parent: _controller);
-
-  int selectedIndex = 0;
-
-  bool wideScreen = false;
-  bool controllerInitialized = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    final double width = MediaQuery.of(context).size.width;
-    final AnimationStatus status = _controller.status;
-    if (width > 600) {
-      if (status != AnimationStatus.forward &&
-          status != AnimationStatus.completed) {
-        _controller.forward();
-      }
-    } else {
-      if (status != AnimationStatus.reverse &&
-          status != AnimationStatus.dismissed) {
-        _controller.reverse();
-      }
-    }
-    if (!controllerInitialized) {
-      controllerInitialized = true;
-      _controller.value = width > 600 ? 1 : 0;
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) {
-        return Scaffold(
-          body: Row(
-            children: [
-              DisappearingNavigationRail(
-                railAnimation: _railAnimation,
-                railFabAnimation: _railFabAnimation,
-                selectedIndex: selectedIndex,
-                backgroundColor: _backgroundColor,
-                onDestinationSelected: (index) {
-                  setState(() {
-                    selectedIndex = index;
-                  });
-                },
-              ),
-              Expanded(
-                child: Container(
-                  color: _backgroundColor,
-                  child: ListDetailTransition(
-                    animation: _railAnimation,
-                    one: EmailListView(
-                      selectedIndex: selectedIndex,
-                      onSelected: (index) {
-                        setState(() {
-                          selectedIndex = index;
-                        });
-                      },
-                      currentUser: widget.currentUser,
-                    ),
-                    two: const ReplyListView(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          floatingActionButton: AnimatedFloatingActionButton(
-            animation: _barAnimation,
-            onPressed: () {},
-            child: const Icon(Icons.add),
-          ),
-          bottomNavigationBar: DisappearingBottomNavigationBar(
-            barAnimation: _barAnimation,
-            selectedIndex: selectedIndex,
-            onDestinationSelected: (index) {
-              setState(() {
-                selectedIndex = index;
-              });
-            },
-          ),
-        );
-      },
-    );
-
-  }
-}
-
