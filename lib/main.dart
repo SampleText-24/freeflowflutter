@@ -1,14 +1,12 @@
+import 'package:SampleTimer/pages/alarm_page.dart';
+import 'package:SampleTimer/pages/stopwatch_page.dart';
+import 'package:SampleTimer/pages/timer_page.dart';
+import 'package:SampleTimer/pages/world_clock_page.dart';
 import 'package:flutter/material.dart';
 
 import 'animations.dart';
-import 'models/data.dart' as data;
-import 'models/models.dart';
-import 'transitions/list_detail_transition.dart';
-import 'widgets/animated_floating_action_button.dart';
 import 'widgets/disappearing_bottom_navigation_bar.dart';
 import 'widgets/disappearing_navigation_rail.dart';
-import 'widgets/email_list_view.dart';
-import 'widgets/reply_list_view.dart';
 
 void main() {
   runApp(const MainApp());
@@ -21,28 +19,25 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData.dark(useMaterial3: true),
-      home: Feed(currentUser: data.user_0),
+      home: MyHomePage(),
     );
   }
 }
 
-class Feed extends StatefulWidget {
-  const Feed({
-    super.key,
-    required this.currentUser,
-  });
-
-  final User currentUser;
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key}) : super(key: key);
 
   @override
-  State<Feed> createState() => _FeedState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _FeedState extends State<Feed> with SingleTickerProviderStateMixin {
-  late final _colorSchema = Theme.of(context).colorScheme;
+class _MyHomePageState extends State<MyHomePage>
+    with SingleTickerProviderStateMixin {
+  late final _colorSchema = Theme
+      .of(context)
+      .colorScheme;
   late final _backgroundColor = Color.alphaBlend(
-    _colorSchema.primary.withOpacity(0.14), _colorSchema.surface
-  );
+      _colorSchema.primary.withOpacity(0.14), _colorSchema.surface);
 
   late final _controller = AnimationController(
       duration: const Duration(milliseconds: 1000),
@@ -62,7 +57,10 @@ class _FeedState extends State<Feed> with SingleTickerProviderStateMixin {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final double width = MediaQuery.of(context).size.width;
+    final double width = MediaQuery
+        .of(context)
+        .size
+        .width;
     final AnimationStatus status = _controller.status;
     if (width > 600) {
       if (status != AnimationStatus.forward &&
@@ -89,6 +87,29 @@ class _FeedState extends State<Feed> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    Widget page;
+    switch (selectedIndex) {
+      case 0:
+        page = AlarmPage();
+        break;
+      case 1:
+        page = WorldClockPage();
+        break;
+      case 2:
+        page = StopwatchPage();
+        break;
+      case 3:
+        page = TimerPage();
+        break;
+      default:
+        throw UnimplementedError('no widget for $selectedIndex');
+    }
+
+    var mainArea = AnimatedSwitcher(
+      duration: Duration(milliseconds: 200),
+      child: page,
+    );
+
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
@@ -106,30 +127,8 @@ class _FeedState extends State<Feed> with SingleTickerProviderStateMixin {
                   });
                 },
               ),
-              Expanded(
-                child: Container(
-                  color: _backgroundColor,
-                  child: ListDetailTransition(
-                    animation: _railAnimation,
-                    one: EmailListView(
-                      selectedIndex: selectedIndex,
-                      onSelected: (index) {
-                        setState(() {
-                          selectedIndex = index;
-                        });
-                      },
-                      currentUser: widget.currentUser,
-                    ),
-                    two: const ReplyListView(),
-                  ),
-                ),
-              ),
+              Expanded(child: mainArea)
             ],
-          ),
-          floatingActionButton: AnimatedFloatingActionButton(
-            animation: _barAnimation,
-            onPressed: () {},
-            child: const Icon(Icons.add),
           ),
           bottomNavigationBar: DisappearingBottomNavigationBar(
             barAnimation: _barAnimation,
@@ -143,7 +142,5 @@ class _FeedState extends State<Feed> with SingleTickerProviderStateMixin {
         );
       },
     );
-
   }
 }
-

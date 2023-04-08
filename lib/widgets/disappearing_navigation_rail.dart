@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../animations.dart';
 import '../destination.dart';
 import '../transitions/nav_rail_transition.dart';
-import 'animated_floating_action_button.dart';
 
 class DisappearingNavigationRail extends StatelessWidget {
   const DisappearingNavigationRail({
@@ -35,12 +34,6 @@ class DisappearingNavigationRail extends StatelessWidget {
             IconButton(
               onPressed: () {},
               icon: const Icon(Icons.menu),
-            ),
-            const SizedBox(height: 8),
-            AnimatedFloatingActionButton(
-              animation: railFabAnimation,
-              onPressed: () {},
-              child: const Icon(Icons.add),
             ),
           ],
         ),

@@ -7,8 +7,8 @@ class Destination {
 }
 
 const List<Destination> destinations = <Destination>[
-  Destination(Icons.inbox_rounded, 'Inbox'),
-  Destination(Icons.article_outlined, 'Articles'),
-  Destination(Icons.messenger_outline_rounded, 'Messages'),
-  Destination(Icons.group_outlined, 'Groups'),
+  Destination(Icons.alarm, 'Alarm'),
+  Destination(Icons.access_time_sharp, 'World clock'),
+  Destination(Icons.timer_outlined, 'Stopwatch'),
+  Destination(Icons.av_timer_outlined, 'Timer'),
 ];
