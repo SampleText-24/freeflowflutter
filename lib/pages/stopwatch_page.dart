@@ -19,6 +19,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
   Timer? timer;
   bool started = false;
   List laps = [];
+  List gaps = []; // добавить разницу между кругами
 
   // Логика работы кнопок
   void start() {
@@ -84,7 +85,10 @@ class _StopwatchPageState extends State<StopwatchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Stopwatch')),
+      appBar: AppBar(
+        title: Text('Stopwatch'),
+        scrolledUnderElevation: 0,
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -94,7 +98,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
               style: TextStyle(fontSize: 22),
             ),
             const SizedBox(height: 40),
-            Container(
+            SizedBox(
               height: 400,
               child: ListView.builder(
                   itemCount: laps.length,
@@ -102,7 +106,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
                     return Padding(
                       padding: EdgeInsets.all(16),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           Text('Lap №${index + 1}'),
                           Text('${laps[index]}')
@@ -112,19 +116,21 @@ class _StopwatchPageState extends State<StopwatchPage> {
                   }),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 150),
+              padding: const EdgeInsets.symmetric(horizontal: 100),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundColor: started || milliseconds == 0 ? Colors.grey.shade800 : Colors.black45,
+                    backgroundColor: started || milliseconds == 0
+                        ? Colors.grey.shade800
+                        : Colors.black45,
                     child: IconButton(
                       onPressed: started || milliseconds == 0
                           ? null
                           : () {
-                        reset();
-                      },
+                              reset();
+                            },
                       icon: Icon(Icons.replay),
                     ),
                   ),
@@ -139,11 +145,18 @@ class _StopwatchPageState extends State<StopwatchPage> {
                           started ? Icon(Icons.pause) : Icon(Icons.play_arrow),
                     ),
                   ),
-                  IconButton(
-                    onPressed: () {
-                      addLaps();
-                    },
-                    icon: Icon(Icons.timer_outlined),
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor:
+                        !started ? Colors.grey.shade800 : Colors.black45,
+                    child: IconButton(
+                      onPressed: !started
+                          ? null
+                          : () {
+                              addLaps();
+                            },
+                      icon: Icon(Icons.timer_outlined),
+                    ),
                   ),
                 ],
               ),

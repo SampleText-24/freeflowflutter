@@ -22,12 +22,15 @@ class DisappearingNavigationRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorSchema = Theme.of(context).colorScheme;
+
     return NavRailTransition(
       animation: railAnimation,
       backgroundColor: backgroundColor,
       child: NavigationRail(
         selectedIndex: selectedIndex,
         backgroundColor: backgroundColor,
+        labelType: NavigationRailLabelType.all,
         onDestinationSelected: onDestinationSelected,
         leading: Column(
           children: [
@@ -37,9 +40,11 @@ class DisappearingNavigationRail extends StatelessWidget {
             ),
           ],
         ),
-        groupAlignment: -0.85,
+        groupAlignment: 0,
+        selectedLabelTextStyle: TextStyle(color: colorSchema.onBackground),
         destinations: destinations.map((d) {
           return NavigationRailDestination(
+            padding: EdgeInsets.symmetric(vertical: 8),
             icon: Icon(d.icon),
             label: Text(d.label),
           );

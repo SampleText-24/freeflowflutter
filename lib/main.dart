@@ -48,7 +48,7 @@ class _MyHomePageState extends State<MyHomePage>
   late final _railFabAnimation = RailFabAnimation(parent: _controller);
   late final _barAnimation = BarAnimation(parent: _controller);
 
-  int selectedIndex = 2;
+  int selectedIndex = 3;
 
   bool wideScreen = false;
   bool controllerInitialized = false;
